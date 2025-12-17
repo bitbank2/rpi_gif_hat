@@ -1,6 +1,8 @@
 # C++ LCD HAT GIF player by Larry Bank
 <br>
-![rpi_gif_hat](/hat_gif.jpg?raw=true "rpi gif hat")
+
+![rpi_gif_hat](https://github.com/bitbank2/rpi_gif_hat/blob/master/hat_gif.jpg?raw=true "Waveshare 1.3 240x240 HAT")
+
 <br>
 This project is a simple C++ example utilizing my bb_spi_lcd and AnimatedGIF libraries to display GIF animations on RPI/Linux LCD HATs. This specific example was written to run on the Waveshare 1.3" LCD HAT (ST7789 240x240 LCD). The up arrow on the joystick is used to switch to the next GIF in the list. The code comes with 4 GIF files that are in a fixed list within the code. These can be changed to any number of type of GIF file as needed.
 
