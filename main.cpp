@@ -17,10 +17,37 @@ AnimatedGIF gif; // static instance of the GIF decoder library
 BB_SPI_LCD lcd; // static instance of the LCD library
 int iCurrentFile = 0;
 
+// Enable the correct definition for your hardware by removing the slashes
+// Make sure only one hardware configuration is defined
+//
+// WAVESHARE_13 = 1.3" 240x240 LCD HAT
+// WAVESHARE_144 = 1.44" 128x128 LCD HAT
+// PIMORONI_20 = 2.0" Pimoroni LCD HAT Mini
+// ADAFRUIT_22 = 2.2" Adafruit PiTFT
+//
+//#define WAVESHARE_13
+//#define PIMORONI_20
+#define ADAFRUIT_22
+
 // The list of GIF files to navigate
 #define NUM_FILES 4
 const char *szFiles[NUM_FILES] = {"buddy_bear_240x240.gif", "badger_240x240.gif", "this_is_fine_240x240.gif", "eggyolk_covid_240x240.gif"};
 
+#ifdef ADAFRUIT_22
+// Definitions for the Waveshare 1.3" 240x240 HAT
+#define LCD_TYPE LCD_ILI9341
+#define DC_PIN 25
+#define RESET_PIN -1
+#define CS_PIN 8
+#define LED_PIN 18
+#define SPI_NUM 0
+#define SPI_CE 0
+#define GPIO_CHIP 0
+#define UP_BUTTON 17
+#define LCD_ROTATION 90
+#endif // ADAFRUIT_22
+
+#ifdef WAVESHARE_13
 // Definitions for the Waveshare 1.3" 240x240 HAT
 #define LCD_TYPE LCD_ST7789_240
 #define DC_PIN 25
@@ -31,10 +58,26 @@ const char *szFiles[NUM_FILES] = {"buddy_bear_240x240.gif", "badger_240x240.gif"
 #define SPI_CE 0
 #define GPIO_CHIP 0
 #define UP_BUTTON 6
+#define LCD_ROTATION 90
+#endif // WAVESHARE_13
+
+#ifdef PIMORONI_20
+#define LCD_TYPE LCD_ST7789
+#define DC_PIN 9
+#define RESET_PIN -1
+#define CS_PIN 7
+#define LED_PIN 13
+#define SPI_NUM 0
+#define SPI_CE 1
+#define GPIO_CHIP 0
+#define UP_BUTTON 5
+#define LCD_ROTATION 270
+#endif // PIMORONI_20
 
 int main(int argc, char *argv[])
 {
   int w, h;
+  int center_x, center_y;
   int bChange = 0; // switch to next file
   uint8_t *pStart;
   uint8_t u8, u8Old = 1; // active low
@@ -48,7 +91,7 @@ int main(int argc, char *argv[])
 // Some devices may need the SPI clock slowed down. The source freq is 250MHz
 // so the next division would be 31.25MHZ (31250000)
   lcd.begin(LCD_TYPE, FLAGS_NONE, 62500000, CS_PIN, DC_PIN, RESET_PIN, LED_PIN, GPIO_CHIP, SPI_NUM, SPI_CE);
-  lcd.setRotation(90); // Make sure we're in landscape orientation
+  lcd.setRotation(LCD_ROTATION);
   lcd.fillScreen(TFT_BLACK);
 
   gif.begin(BIG_ENDIAN_PIXELS); // bb_spi_lcd expects big-endian RGB565 pixels
@@ -58,6 +101,13 @@ int main(int argc, char *argv[])
       if (gif.open(szFiles[iCurrentFile], NULL)) {
       w = gif.getCanvasWidth();
       h = gif.getCanvasHeight();
+      if (w > lcd.width() || h > lcd.height()) {
+          printf("GIF too large for the display; exiting...\n");
+          return -1;
+      }
+      // If the animation is smaller than the LCD, center it
+      center_x = (lcd.width() - w)/2;
+      center_y = (lcd.height() - h)/2;
       //printf("Successfully opened GIF; Canvas size = %d x %d\n", w, h);
 // The AnimatedGIF framebuffer is laid out as WxH 8-bit pixels (original)
 // followed by the full color pixels translated through the palette
@@ -69,7 +119,7 @@ int main(int argc, char *argv[])
 
       while (!bChange) { // loop over each file until the user chooses another
           while (gif.playFrame(false, &iDelay, NULL) && !bChange) {
-	      lcd.setAddrWindow(0,0,w,h);
+	      lcd.setAddrWindow(center_x,center_y,w,h);
 	      lcd.pushPixels((uint16_t *)pStart, w * h); // send the whole frame
               usleep(iDelay * 1000); // delay between frames
               // See if the user wants to change to a different animation
