@@ -27,11 +27,16 @@ int iCurrentFile = 0;
 //
 //#define WAVESHARE_13
 //#define PIMORONI_20
-#define ADAFRUIT_22
+//#define ADAFRUIT_22
+#define WAVESHARE_144
 
 // The list of GIF files to navigate
 #define NUM_FILES 4
+#ifdef WAVESHARE_144
+const char *szFiles[NUM_FILES] = {"buddy_bear_128x128.gif", "snappy_crab_128x128.gif", "thisisfine_128x128.gif", "egg_yolk_128x128.gif"};
+#else
 const char *szFiles[NUM_FILES] = {"buddy_bear_240x240.gif", "badger_240x240.gif", "this_is_fine_240x240.gif", "eggyolk_covid_240x240.gif"};
+#endif
 
 #ifdef ADAFRUIT_22
 // Definitions for the Waveshare 1.3" 240x240 HAT
@@ -47,9 +52,13 @@ const char *szFiles[NUM_FILES] = {"buddy_bear_240x240.gif", "badger_240x240.gif"
 #define LCD_ROTATION 90
 #endif // ADAFRUIT_22
 
+#if defined( WAVESHARE_13 ) || defined ( WAVESHARE_144 )
 #ifdef WAVESHARE_13
 // Definitions for the Waveshare 1.3" 240x240 HAT
 #define LCD_TYPE LCD_ST7789_240
+#else // WAVESHARE_144
+#define LCD_TYPE LCD_ST7735_128B
+#endif
 #define DC_PIN 25
 #define RESET_PIN 27
 #define CS_PIN 8
@@ -59,7 +68,7 @@ const char *szFiles[NUM_FILES] = {"buddy_bear_240x240.gif", "badger_240x240.gif"
 #define GPIO_CHIP 0
 #define UP_BUTTON 6
 #define LCD_ROTATION 90
-#endif // WAVESHARE_13
+#endif // WAVESHARE_13 & WAVESHARE_144
 
 #ifdef PIMORONI_20
 #define LCD_TYPE LCD_ST7789
